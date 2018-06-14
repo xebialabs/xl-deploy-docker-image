@@ -1,0 +1,14 @@
+version: '2.4'
+services:
+  xld:
+    image: xebialabs/xl-deploy:v8.1.0-rc.2
+    mem_limit: 4g
+    volumes:
+      - '${HOME}/xl-deploy-server/hotfix/lib:/opt/xl-deploy-server/hotfix/lib:ro'
+      - '${HOME}/xl-deploy-server/hotfix/plugins:/opt/xl-deploy-server/hotfix/plugins:ro'
+      - '${HOME}/xl-deploy-server/conf:/opt/xl-deploy-server/conf:rw'
+      - '${HOME}/xl-deploy-server/ext:/opt/xl-deploy-server/ext:ro'
+      - '${HOME}/xl-deploy-server/plugins:/opt/xl-deploy-server/plugins:rw'
+      - '${HOME}/xl-deploy-server/repository:/opt/xl-deploy-server/repository:rw'
+    ports:
+        - '4516:4516'
