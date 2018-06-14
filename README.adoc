@@ -111,9 +111,9 @@ If a volume is provided for the `/opt/xl-deploy-server/plugins` directory, it ca
 
 In a default setup, where the embedded H2 and Derby databases are used to persist the repository and the archive data respectively, those database are stored in the `/opt/xl-deploy-server/repository` and `/opt/xl-deploy-server/archive` directories. Provide a mount point for these volumes to ensure that the repository and archive data are preserved across container runs.
 
-=== Customizations and hotfixes (`ext` and `hotfix`)
+=== Customizations and hotfixes (`ext`, `hotfix/lib` and `hotfix/plugins`)
 
-The `/opt/xl-deploy-server/ext` and `/opt/xl-deploy-server/hotfix` volumes are provided to allow for customizations such as https://docs.xebialabs.com/xl-deploy/how-to/create-custom-task-types.html[custom tasks] and to install hotfixes.
+The `/opt/xl-deploy-server/ext`, `/opt/xl-deploy-server/hotfix/lib` and `/opt/xl-deploy-server/hotfix/plugins` volumes are provided to allow for customizations such as https://docs.xebialabs.com/xl-deploy/how-to/create-custom-task-types.html[custom tasks] and to install hotfixes.
 
 
 = Building and publishing the images
