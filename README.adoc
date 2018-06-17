@@ -85,7 +85,8 @@ The `xebialabs/xl-deploy` image exposes the following directories as mount point
 
 * `/opt/xl-deploy-server/conf`
 * `/opt/xl-deploy-server/ext`
-* `/opt/xl-deploy-server/hotfix`
+* `/opt/xl-deploy-server/hotfix/lib`
+* `/opt/xl-deploy-server/hotfix/plugins`
 * `/opt/xl-deploy-server/plugins`
 * `/opt/xl-deploy-server/repository`
 
