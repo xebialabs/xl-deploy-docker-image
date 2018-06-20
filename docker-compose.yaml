@@ -1,7 +1,7 @@
 version: '2.4'
 services:
   xld:
-    image: xebialabs/xl-deploy:v8.1.0-rc.2
+    image: xebialabs/xl-deploy:8.1
     mem_limit: 4g
     volumes:
       - '${HOME}/xl-deploy-server/hotfix/lib:/opt/xl-deploy-server/hotfix/lib:ro'

@@ -1,6 +1,9 @@
 = XL Docker image for XL Deploy
 
-This repository contains the source code for the Docker image for XL Deploy, which based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image].
+This repository contains the source code for two flavors of Docker images for XL Deploy:
+
+* The regular image, which is based on Debian (slim) Linux flavor  of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
+* An alternative image, which is based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
 
 = Using the image
 
@@ -16,7 +19,7 @@ Run the XL Deploy container with the following command:
 
 [source,shell]
 ----
-$ docker run -d -p 4516:4516 --name xld xebialabs/xl-deploy:v8.1.0-rc.2
+$ docker run -d -p 4516:4516 --name xld xebialabs/xl-deploy:8.1
 ----
 
 Follow the logs to capture the generated admin password and wait until you see the message "XL Deploy has started":
@@ -51,7 +54,7 @@ The randomly generated admin password makes it hard to include the XL Deploy con
 
 [source,shell]
 ----
-$ docker run -d -p 4516:4516 -e ADMIN_PASSWORD=secret --name xld xebialabs/xl-deploy:v8.1.0-rc.2
+$ docker run -d -p 4516:4516 -e ADMIN_PASSWORD=secret --name xld xebialabs/xl-deploy:8.1.0-rc.2
 ----
 
 === For production usage (with persistence)
@@ -65,7 +68,7 @@ To ensure persistence when reconfiguring , volumes should be mounted at the `con
 $ docker run -d -p 4516:4516 \
 -v ${HOME}/xl-deploy-server/conf:/opt/xl-deploy-server/conf:rw \
 -v ${HOME}/xl-deploy-server/repository:/opt/xl-deploy-server/repository:rw \
---name xld xebialabs/xl-deploy:v8.1.0-rc.2
+--name xld xebialabs/xl-deploy:8.1.0-rc.2
 ----
 
 == Environment variables
@@ -119,33 +122,62 @@ The `/opt/xl-deploy-server/ext`, `/opt/xl-deploy-server/hotfix/lib` and `/opt/xl
 
 = Building and publishing the images
 
-== Alpine-based image
-To build the regular, Alpine-based image:
+== Debian-based image
+
+To build the regular, Debian slim-based image:
 
 [source,shell]
 ----
-$ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:v8.1 --tag xebialabs/xl-deploy:v8.1-alpine --tag xebialabs/xl-deploy:v8.1.0 --tag xebialabs/xl-deploy:v8.1.0-alpine -f alpine/Dockerfile .
+$ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:8.1 --tag xebialabs/xl-deploy:8.1-debian-slim --tag xebialabs/xl-deploy:8.1.0 --tag xebialabs/xl-deploy:8.1.0-debian-slim -f debian-slim/Dockerfile .
 ----
 
-To publish the regular image:
+To publish the regular, Debian slim-based image:
 [source,shell]
 ----
-$ docker push xebialabs/xl-deploy:v8.1
-$ docker push xebialabs/xl-deploy:v8.1-alpine
-$ docker push xebialabs/xl-deploy:v8.1.0
-$ docker push xebialabs/xl-deploy:v8.1.0-alpine
+$ docker push xebialabs/xl-deploy:8.1
+$ docker push xebialabs/xl-deploy:8.1-debian-slim
+$ docker push xebialabs/xl-deploy:8.1.0
+$ docker push xebialabs/xl-deploy:8.1.0-debian-slim
 ----
 
 == Non-final versions
 To build non-final versions, use:
 [source,shell]
 ----
-$ docker build --build-arg XLD_VERSION=8.1.0-rc.2 --tag xebialabs/xl-deploy:v8.1.0-rc.2 --tag xebialabs/xl-deploy:v8.1.0-rc.2-alpine -f alpine/Dockerfile .
+$ docker build --build-arg XLD_VERSION=8.1.0-rc.2 --tag xebialabs/xl-deploy:8.1.0-rc.2 --tag xebialabs/xl-deploy:8.1.0-rc.2-debian-slim -f debian-slim/Dockerfile .
 ----
 
 To publish non-final versions, use:
 [source,shell]
 ----
-$ docker push xebialabs/xl-deploy:v8.1.0-rc.2
-$ docker push xebialabs/xl-deploy:v8.1.0-rc.2-alpine
+$ docker push xebialabs/xl-deploy:8.1.0-rc.2
+$ docker push xebialabs/xl-deploy:8.1.0-rc.2-debian-slim
+----
+
+== Alpine-based image
+To build the Alpine-based image:
+
+[source,shell]
+----
+$ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:8.1-alpine --tag xebialabs/xl-deploy:8.1.0-alpine -f alpine/Dockerfile .
+----
+
+To publish the Alpine-based image:
+[source,shell]
+----
+$ docker push xebialabs/xl-deploy:8.1-alpine
+$ docker push xebialabs/xl-deploy:8.1.0-alpine
+----
+
+== Non-final versions
+To build non-final versions, use:
+[source,shell]
+----
+$ docker build --build-arg XLD_VERSION=8.1.0-rc.2 --tag xebialabs/xl-deploy:8.1.0-rc.2-alpine -f alpine/Dockerfile .
+----
+
+To publish non-final versions, use:
+[source,shell]
+----
+$ docker push xebialabs/xl-deploy:8.1.0-rc.2-alpine
 ----

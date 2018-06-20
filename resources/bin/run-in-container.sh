@@ -40,12 +40,12 @@ if [ ! -f "${APP_HOME}/conf/deployit.conf" ]; then
     echo "No arguments passed to container:"
     echo "... Running default setup"
 
-    if [ "${ADMIN_PASSWORD}" == "" ]; then
+    if [ "${ADMIN_PASSWORD}" = "" ]; then
       ADMIN_PASSWORD=`pwgen 8 1`
       echo "... Generating admin password: ${ADMIN_PASSWORD}"
     fi
 
-    if [ "${REPOSITORY_KEYSTORE_PASSPHRASE}" == "" ]; then
+    if [ "${REPOSITORY_KEYSTORE_PASSPHRASE}" = "" ]; then
       REPOSITORY_KEYSTORE_PASSPHRASE=`pwgen 16 1`
       echo "... Generating repository keystore passphrase: ${REPOSITORY_KEYSTORE_PASSPHRASE}"
     fi
