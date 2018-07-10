@@ -43,7 +43,7 @@ else
         fi
 
         DL_LOCATION_DIST="https://dist.xebialabs.com/customer/xl-deploy/product/${VERSION}/xl-deploy-${VERSION}-server.zip"
-        DL_LOCATION_NEXUS="https://nexus.xebialabs.com/nexus/service/local/repositories/${NEXUSREPO}/content/com/xebialabs/deployit/xl-deploy/${VERSION}/xl-deploy-${VERSION}-server.zip"
+        DL_LOCATION_NEXUS="https://nexus.xebialabs.com/nexus/service/local/repositories/${NEXUSREPO}/content/com/xebialabs/deployit/xl-deploy/${VERSION}/xl-deploy-${VERSION}-server-trial-edition.zip"
 
         if [ "$SOURCE" = "nexus" ]; then
             DL_LOCATION=$DL_LOCATION_NEXUS
