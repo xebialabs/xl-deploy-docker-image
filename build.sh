@@ -59,7 +59,7 @@ fi
 echo "Product zip located at: ${DIST_DEST}"
 
 echo "Building image with flavor ${FLAVOR}"
-docker build --build-arg XLR_VERSION="${VERSION}" --tag "${REGISTRY}/${REPOSITORY}:${VERSION}" -f "${FLAVOR}/Dockerfile" .
+docker build --build-arg XLD_VERSION="${VERSION}" --tag "${REGISTRY}/${REPOSITORY}:${VERSION}" -f "${FLAVOR}/Dockerfile" .
 
 ####### PUSH TO REGISTRY ###############################################################################################
 
