@@ -59,8 +59,12 @@ LABEL name="xebialabs/xl-deploy" \
       url="https://www.xebialabs.com/xl-deploy"
 
 # Install dependencies
-RUN yum update && \
-    yum install -y dumb-init java-1.8.0-openjdk-headless pwgen
+RUN yum update -y && \
+    yum install -y epel-release && \
+    yum install -y java-1.8.0-openjdk-headless pwgen python-pip && \
+    yum clean all
+
+RUN pip install dumb-init
 
 ENV USER_NAME=xl-deploy USER_UID=10001 APP_ROOT=/opt
 ENV APP_HOME=/opt/xl-deploy-server
