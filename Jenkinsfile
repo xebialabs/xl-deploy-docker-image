@@ -29,7 +29,7 @@ pipeline {
             }
             agent {
                 node {
-                    label 'linux-docker-xlr'
+                    label 'xld'
                 }
             }
 
