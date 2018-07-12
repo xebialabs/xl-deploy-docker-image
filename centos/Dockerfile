@@ -4,8 +4,8 @@ FROM alpine:3.7 as installer
 RUN apk add --no-cache gawk unzip
 
 ARG XLD_VERSION
-ENV APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-deploy-server
+ENV APP_ROOT=/opt/xebialabs
+ENV APP_HOME=${APP_ROOT}/xl-deploy-server
 
 # Install XL Deploy
 ADD resources/xl-deploy-${XLD_VERSION}-server.zip /tmp
@@ -17,7 +17,7 @@ RUN mkdir -p ${APP_ROOT} && \
 ADD resources/bin/run-in-container.sh ${APP_HOME}/bin/
 
 # Modify bin/run.sh so that java becomes a child process of dumb-init
-RUN sed -i 's/^\($JAVACMD $XL_RELEASE_SERVER_OPTS\)/exec \1/' ${APP_HOME}/bin/run.sh
+RUN sed -i 's/^\($JAVACMD $XL_DEPLOY_SERVER_OPTS\)/exec \1/' ${APP_HOME}/bin/run.sh
 
 # Move and augment conf directory of regular install
 RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
@@ -25,10 +25,11 @@ RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
 COPY resources/default-conf ${APP_HOME}/default-conf
 
 # Modify conf/xld-wrapper-linux.conf to add node-conf to the classpath and to add container-specific VM options
-RUN gawk -i inplace '/^wrapper.java.classpath.1=/ { print "wrapper.java.classpath.1=node-conf" } \
+RUN gawk '/^wrapper.java.classpath.1=/ { print "wrapper.java.classpath.1=node-conf" } \
 { if (match($0, /^(wrapper.java.classpath).([0-9]+)=(.*)$/, a)) { printf("%s.%d=%s\n", a[1], (a[2]+1), a[3]) } else \
   if (/^wrapper.java.additional.1=-Xms1024m$/) { print "wrapper.java.additional.1=-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" } else \
-  { print $0 }}' ${APP_HOME}/default-conf/xld-wrapper-linux.conf
+  { print $0 }}' ${APP_HOME}/default-conf/xld-wrapper-linux.conf  > /tmp/xld-wrapper-linux.conf
+RUN mv /tmp/xld-wrapper-linux.conf ${APP_HOME}/default-conf/xld-wrapper-linux.conf
 
 # Create node-specific conf directory and add template for node-specific xl-deploy.conf file
 RUN mkdir ${APP_HOME}/node-conf
@@ -58,12 +59,16 @@ LABEL name="xebialabs/xl-deploy" \
       description="Enterprise-scale Application Release Automation for any environment" \
       url="https://www.xebialabs.com/xl-deploy"
 
+ENV USER_UID=10001 APP_ROOT=/opt/xebialabs
+ENV APP_HOME=${APP_ROOT}/xl-deploy-server
+
+ADD resources/amd64/tini ${APP_ROOT}/tini
+RUN chmod ugo+x ${APP_ROOT}/tini
+
 # Install dependencies
 RUN yum update && \
-    yum install -y dumb-init java-1.8.0-openjdk-headless pwgen
-
-ENV USER_NAME=xl-deploy USER_UID=10001 APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-deploy-server
+    yum install -y java-1.8.0-openjdk-headless && \
+    yum clean all
 
 # Copy installed XL Deploy
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
@@ -77,5 +82,5 @@ VOLUME ["${APP_HOME}/conf", "${APP_HOME}/hotfix/lib", "${APP_HOME}/hotfix/plugin
 EXPOSE 4516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
-# expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
-ENTRYPOINT ["/usr/bin/dumb-init", "/opt/xl-deploy-server/bin/run-in-container.sh"]
+# expanded when using the shell form, but that results in tini running with a PID higher than 1.
+ENTRYPOINT ["/opt/xebialabs/tini", "/opt/xebialabs/xl-deploy-server/bin/run-in-container.sh"]
