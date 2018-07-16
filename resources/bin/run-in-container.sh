@@ -1,5 +1,9 @@
 #!/bin/sh
 
+pwgen() {
+  tr -cd '[:alnum:]' < /dev/urandom | fold -w$1 | head -n1
+}
+
 # Copy default plugins
 if [ -z "$(ls -A ${APP_HOME}/plugins)" ]; then
   echo "Empty ${APP_HOME}/plugins directory detected:"
@@ -41,12 +45,12 @@ if [ ! -f "${APP_HOME}/conf/deployit.conf" ]; then
     echo "... Running default setup"
 
     if [ "${ADMIN_PASSWORD}" = "" ]; then
-      ADMIN_PASSWORD=`pwgen 8 1`
+      ADMIN_PASSWORD=`pwgen 8`
       echo "... Generating admin password: ${ADMIN_PASSWORD}"
     fi
 
     if [ "${REPOSITORY_KEYSTORE_PASSPHRASE}" = "" ]; then
-      REPOSITORY_KEYSTORE_PASSPHRASE=`pwgen 16 1`
+      REPOSITORY_KEYSTORE_PASSPHRASE=`pwgen 16`
       echo "... Generating repository keystore passphrase: ${REPOSITORY_KEYSTORE_PASSPHRASE}"
     fi
     echo "... Generating repository keystore"

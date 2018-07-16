@@ -1,17 +1,45 @@
-FROM alpine:3.7 as installer
+FROM registry.access.redhat.com/rhel7/rhel-atomic
+MAINTAINER XebiaLabs Development <docker@xebialabs.com>
 
-# Install dependencies
-RUN apk add --no-cache gawk unzip
+LABEL name="xebialabs/xl-deploy" \
+      maintainer="docker@xebialabs.com" \
+      vendor="XebiaLabs" \
+      version="8.1.0" \
+      release="1" \
+      summary="XL Deploy" \
+      description="Enterprise-scale Application Release Automation for any environment" \
+      url="https://www.xebialabs.com/xl-deploy"
 
 ARG XLD_VERSION
-ENV APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-deploy-server
+ENV APP_ROOT=/opt/xebialabs USER_UID=10001
+ENV APP_HOME=${APP_ROOT}/xl-deploy-server
+
+COPY resources/help.md /tmp/
+
+### add licenses to this directory
+COPY resources/licenses /licenses
+
+# Install dependencies
+RUN INSTALL_PKGS="golang-github-cpuguy83-go-md2man curl hostname" && \
+    microdnf install --enablerepo=rhel-7-server-rpms --enablerepo=rhel-7-server-optional-rpms --nodocs ${INSTALL_PKGS} && \
+    microdnf update && \
+### help file markdown to man conversion
+    go-md2man -in /tmp/help.md -out /help.1 && \
+    microdnf clean all
+
+RUN microdnf install --enablerepo=rhel-7-server-rpms --nodocs unzip gawk java-1.8.0-openjdk java-1.8.0-openjdk-devel && \
+### Set the Java random source
+    echo "securerandom.source=file:/dev/urandom" >> /usr/lib/jvm/java/jre/lib/security/java.security && \
+    microdnf clean all
 
 # Install XL Deploy
 ADD resources/xl-deploy-${XLD_VERSION}-server.zip /tmp
 RUN mkdir -p ${APP_ROOT} && \
     unzip /tmp/xl-deploy-${XLD_VERSION}-server.zip -d ${APP_ROOT} && \
     mv ${APP_ROOT}/xl-deploy-${XLD_VERSION}-server ${APP_HOME}
+
+COPY resources/amd64/tini ${APP_ROOT}/tini
+RUN chmod ugo+x ${APP_ROOT}/tini
 
 # Add bin/run-in-container.sh
 ADD resources/bin/run-in-container.sh ${APP_HOME}/bin/
@@ -25,10 +53,11 @@ RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
 COPY resources/default-conf ${APP_HOME}/default-conf
 
 # Modify conf/xld-wrapper-linux.conf to add node-conf to the classpath and to add container-specific VM options
-RUN gawk -i inplace '/^wrapper.java.classpath.1=/ { print "wrapper.java.classpath.1=node-conf" } \
+RUN gawk '/^wrapper.java.classpath.1=/ { print "wrapper.java.classpath.1=node-conf" } \
 { if (match($0, /^(wrapper.java.classpath).([0-9]+)=(.*)$/, a)) { printf("%s.%d=%s\n", a[1], (a[2]+1), a[3]) } else \
   if (/^wrapper.java.additional.1=-Xms1024m$/) { print "wrapper.java.additional.1=-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" } else \
-  { print $0 }}' ${APP_HOME}/default-conf/xld-wrapper-linux.conf
+  { print $0 }}' ${APP_HOME}/default-conf/xld-wrapper-linux.conf  > /tmp/xld-wrapper-linux.conf
+RUN mv /tmp/xld-wrapper-linux.conf ${APP_HOME}/default-conf/xld-wrapper-linux.conf
 
 # Create node-specific conf directory and add template for node-specific xl-deploy.conf file
 RUN mkdir ${APP_HOME}/node-conf
@@ -46,27 +75,6 @@ RUN chgrp -R 0 ${APP_ROOT} && \
     chmod -R g=u ${APP_ROOT} && \
     chmod g+x ${APP_HOME}/bin/*.sh
 
-FROM openjdk:8-jdk-alpine
-MAINTAINER XebiaLabs Development <docker@xebialabs.com>
-
-LABEL name="xebialabs/xl-deploy" \
-      maintainer="docker@xebialabs.com" \
-      vendor="XebiaLabs" \
-      version="8.1.0-rc.2" \
-      release="1" \
-      summary="XL Deploy" \
-      description="Enterprise-scale Application Release Automation for any environment" \
-      url="https://www.xebialabs.com/xl-deploy"
-
-# Install dependencies
-RUN apk add --no-cache dumb-init pwgen
-
-ENV USER_NAME=xl-deploy USER_UID=10001 APP_ROOT=/opt
-ENV APP_HOME=/opt/xl-deploy-server
-
-# Copy installed XL Deploy
-COPY --from=installer ${APP_ROOT} ${APP_ROOT}
-
 WORKDIR ${APP_HOME}
 
 # Don't run as root
@@ -76,5 +84,5 @@ VOLUME ["${APP_HOME}/conf", "${APP_HOME}/hotfix/lib", "${APP_HOME}/hotfix/plugin
 EXPOSE 4516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
-# expanded when using the shell form, but that results in dumb-init running with a PID higher than 1.
-ENTRYPOINT ["/usr/bin/dumb-init", "/opt/xl-deploy-server/bin/run-in-container.sh"]
+# expanded when using the shell form, but that results in tini running with a PID higher than 1.
+ENTRYPOINT ["/opt/xebialabs/tini", "/opt/xebialabs/xl-deploy-server/bin/run-in-container.sh"]
