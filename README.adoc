@@ -1,124 +1,16 @@
 = XL Docker image for XL Deploy
 
-This repository contains the source code for two flavors of Docker images for XL Deploy:
+This repository contains the source code for three flavors of Docker images for XL Deploy:
 
-* The regular image, which is based on Debian (slim) Linux flavor  of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
-* An alternative image, which is based on the Alpine Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
+1. The regular image, which is based on Debian (slim) Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
+1. An alternative image, which is based on the https://hub.docker.com/_/openjdk/[CentOS 7 base image] and has OpenJDK 1.8 installed
+1. Another alternative image, which is based on the registry.access.redhat.com/rhel7/rhel-atomic[Red Hat Enterprise Linux Atomic 7 base image] and has OpenJDK 1.8 installed
 
-= Using the image
+This document only describes how to build these images. For user documentation, please refer to the following packages from the XebiaLabs documentation site:
 
-The Docker image for XL Deploy behaves as closely as possible to the existing installation ZIP of XL Deploy to ensure that existing setup, upgrade and operations procedure remain valid.
-
-The directory `/opt/xl-deploy-server` contains an extracted installation setup, augmented with a number of directories that will be discussed below.
-
-== Running the container
-
-=== For demos and simple trial usage (no persistence)
-
-Run the XL Deploy container with the following command:
-
-[source,shell]
-----
-$ docker run -d -p 4516:4516 --name xld xebialabs/xl-deploy:8.1
-----
-
-Follow the logs to capture the generated admin password and wait until you see the message "XL Deploy has started":
-
-[source,shell]
-----
-$ docker logs -f xld
-----
-
-
-Stop the XL Deploy container:
-
-[source,shell]
-----
-$ docker stop xld
-----
-
-
-Start the XL Deploy container:
-
-[source,shell]
-----
-$ docker start xld
-----
-
-Even though no volumes have been defined, the container does keep state between stopping it and then starting it again. For production setups, do define volumes and/or configure XL Deploy to store its state in an external database.
-
-
-=== For automated testing purposes (known admin password)
-
-The randomly generated admin password makes it hard to include the XL Deploy container in an automated tests or any other use case that depends on knowing the admin password. For such use cases, the `ADMIN_PASSWORD` environment variable can be set:
-
-[source,shell]
-----
-$ docker run -d -p 4516:4516 -e ADMIN_PASSWORD=secret --name xld xebialabs/xl-deploy:8.1.0-rc.2
-----
-
-=== For production usage (with persistence)
-
-The previous two set-ups did not persist the configuration and the repository and archive data across container runs, for example when starting a new container with a newer version of the XL Deploy image.
-
-To ensure persistence when reconfiguring , volumes should be mounted at the `conf`, `repository` and `archive` mount points:
-
-[source,shell]
-----
-$ docker run -d -p 4516:4516 \
--v ${HOME}/xl-deploy-server/conf:/opt/xl-deploy-server/conf:rw \
--v ${HOME}/xl-deploy-server/repository:/opt/xl-deploy-server/repository:rw \
---name xld xebialabs/xl-deploy:8.1.0-rc.2
-----
-
-== Environment variables
-
-The `xebialabs/xl-deploy` image exposes the following environment variables to change the default setup procedure that runs when a fresh installation is detected:
-
-* `ADMIN_PASSWORD` sets the admin password for a new installation. If this environment variable is not set, a random admin password is generated and printed to the console of the container.
-* `REPOSITORY_KEYSTORE_PASSPHRASE` sets the passphrase of the repository encryption key for a new installation. If this environment variable is not set, a random passphrase is generated and printed to the console of the container.
-
-== Ports
-
-The `xebialabs/xl-deploy` image exposes port 4516 over which the XL Deploy user interface and REST API are served.
-
-== Volumes
-
-The `xebialabs/xl-deploy` image exposes the following directories as mount points:
-
-* `/opt/xl-deploy-server/conf`
-* `/opt/xl-deploy-server/ext`
-* `/opt/xl-deploy-server/hotfix/lib`
-* `/opt/xl-deploy-server/hotfix/plugins`
-* `/opt/xl-deploy-server/plugins`
-* `/opt/xl-deploy-server/repository`
-
-Providing volumes for these mount points is optional, but does guarantee persistence across container runs. The sections below will describe how the mountpoints are handled.
-
-=== Configuration (`conf`)
-
-The `/opt/xl-deploy-server/conf` on the image is empty. The first time that the container is started, the contents of the `/opt/xl-deploy-server/default-conf` directory are copied into the `conf` directory. The files in the `default-conf` are similar to those in a regular XL Deploy installation ZIP, except that they have been tweaked for XL Deploy running in a container.
-
-If a volume is provided for the `/opt/xl-deploy-server/conf` mount point, the configuration (including the admin password, the product license) is persisted across container runs. Also, if any files are present on the volume the first time that the container is started, they will not be overwritten by the files from the `default-conf` directory. This allows one to set configurations like the `logback.xml` ahead of time.
-
-In addition to the `conf` directory, the image also contains `/opt/xl-deploy-server/node-conf` directory. This directory contains a `xl-deploy.conf` file that contains two properties: `xl.cluster.node.id` and `xl.cluster.node.hostname`. Every time the container is started, the IP address of the container is stored in these properties. This configuration file overrides the values in the `/opt/xl-deploy-server/conf/xl-deploy.conf` configuration file and can be used to configure XL Deploy in cluster mode.
-
-=== Plugins (`plugins`)
-
-Just like the `conf` directory, the `/opt/xl-deploy-server/plugins` directory on the image is empty. The first time that the container is started, the contents of the `/opt/xl-deploy-server/default-plugins` directory are copied into the `plugins` directory.
-
-And just like with the `conf` directory, if a plugin is already present in a volume mounted on the `plugins` mount point, it is not overwritten. This behavior also recognizes different versions of the same plugin.
-
-If a volume is provided for the `/opt/xl-deploy-server/plugins` directory, it can be used to pre-select certain plugins before startup. It also means that you'll have to upgrade the plugins manually, as per the https://docs.xebialabs.com/xl-deploy/how-to/upgrade-xl-deploy.html[Upgrade instructions for XL Deploy].
-
-=== Data (`repository` and `archive`)
-
-In a default setup, where the embedded H2 and Derby databases are used to persist the repository and the archive data respectively, those database are stored in the `/opt/xl-deploy-server/repository` and `/opt/xl-deploy-server/archive` directories. Provide a mount point for these volumes to ensure that the repository and archive data are preserved across container runs.
-
-=== Customizations and hotfixes (`ext`, `hotfix/lib` and `hotfix/plugins`)
-
-The `/opt/xl-deploy-server/ext`, `/opt/xl-deploy-server/hotfix/lib` and `/opt/xl-deploy-server/hotfix/plugins` volumes are provided to allow for customizations such as https://docs.xebialabs.com/xl-deploy/how-to/create-custom-task-types.html[custom tasks] and to install hotfixes.
-
+* https://docs.xebialabs.com/xl-deploy/concept/docker-images-for-xl-deploy.html[Docker images for XL Deploy]
+* https://docs.xebialabs.com/xl-deploy/how-to/use-the-xl-deploy-docker-images.html[Use the XL Deploy Docker images]
+* https://docs.xebialabs.com/xl-platform/how-to/getting-started-with-xl-docker-containers.markdown[Running the XebiaLabs Docker containers with Docker Compose]
 
 = Building and publishing the images
 
@@ -140,44 +32,34 @@ $ docker push xebialabs/xl-deploy:8.1.0
 $ docker push xebialabs/xl-deploy:8.1.0-debian-slim
 ----
 
-== Non-final versions
-To build non-final versions, use:
-[source,shell]
-----
-$ docker build --build-arg XLD_VERSION=8.1.0-rc.2 --tag xebialabs/xl-deploy:8.1.0-rc.2 --tag xebialabs/xl-deploy:8.1.0-rc.2-debian-slim -f debian-slim/Dockerfile .
-----
+== CentOS-based image
 
-To publish non-final versions, use:
-[source,shell]
-----
-$ docker push xebialabs/xl-deploy:8.1.0-rc.2
-$ docker push xebialabs/xl-deploy:8.1.0-rc.2-debian-slim
-----
-
-== Alpine-based image
-To build the Alpine-based image:
+To build the alternative, CentOS-based image:
 
 [source,shell]
 ----
-$ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:8.1-alpine --tag xebialabs/xl-deploy:8.1.0-alpine -f alpine/Dockerfile .
+$ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:8.1-centos --tag xebialabs/xl-deploy:8.1.0-centos -f centos/Dockerfile .
 ----
 
-To publish the Alpine-based image:
+To publish the regular, Debian slim-based image:
 [source,shell]
 ----
-$ docker push xebialabs/xl-deploy:8.1-alpine
-$ docker push xebialabs/xl-deploy:8.1.0-alpine
+$ docker push xebialabs/xl-deploy:8.1-centos
+$ docker push xebialabs/xl-deploy:8.1.0-centos
 ----
 
-== Non-final versions
-To build non-final versions, use:
+== RHEL-based image
+
+To build the alternative, Red Hat Enterprise Linux-based image:
+
 [source,shell]
 ----
-$ docker build --build-arg XLD_VERSION=8.1.0-rc.2 --tag xebialabs/xl-deploy:8.1.0-rc.2-alpine -f alpine/Dockerfile .
+$ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:8.1-rhel --tag xebialabs/xl-deploy:8.1.0-rhel -f rhel/Dockerfile .
 ----
 
-To publish non-final versions, use:
+To publish the alternative, Red Hat Enterprise Linux-based image:
 [source,shell]
 ----
-$ docker push xebialabs/xl-deploy:8.1.0-rc.2-alpine
+$ docker push xebialabs/xl-deploy:8.1-rhel
+$ docker push xebialabs/xl-deploy:8.1.0-rhel
 ----
