@@ -4,13 +4,13 @@ This repository contains the source code for three flavors of Docker images for 
 
 1. The regular image, which is based on Debian (slim) Linux flavor of the https://hub.docker.com/_/openjdk/[OpenJDK base image]
 1. An alternative image, which is based on the https://hub.docker.com/_/openjdk/[CentOS 7 base image] and has OpenJDK 1.8 installed
-1. Another alternative image, which is based on the registry.access.redhat.com/rhel7/rhel-atomic[Red Hat Enterprise Linux Atomic 7 base image] and has OpenJDK 1.8 installed
+1. The Red Hat-certified image, which is based on the registry.access.redhat.com/rhel7/rhel-atomic[Red Hat Enterprise Linux Atomic 7 base image] and has OpenJDK 1.8 installed
 
 This document only describes how to build these images. For user documentation, please refer to the following packages from the XebiaLabs documentation site:
 
-* https://docs.xebialabs.com/xl-deploy/concept/docker-images-for-xl-deploy.html[Docker images for XL Deploy]
-* https://docs.xebialabs.com/xl-deploy/how-to/use-the-xl-deploy-docker-images.html[Use the XL Deploy Docker images]
-* https://docs.xebialabs.com/xl-platform/how-to/getting-started-with-xl-docker-containers.markdown[Running the XebiaLabs Docker containers with Docker Compose]
+* https://docs.xebialabs.com/xl-deploy/how-to/use-the-xl-deploy-docker-images.html[Using the XL Deploy Docker image]
+* https://docs.xebialabs.com/xl-platform/how-to/getting-started-with-xl-docker-containers.markdown[Running the XebiaLabs Docker images with Docker Compose]
+* https://docs.xebialabs.com/xl-deploy/concept/docker-images-for-xl-deploy.html[Reference documentation for the XL Deploy Docker image]
 
 = Building and publishing the images
 
@@ -41,25 +41,18 @@ To build the alternative, CentOS-based image:
 $ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:8.1-centos --tag xebialabs/xl-deploy:8.1.0-centos -f centos/Dockerfile .
 ----
 
-To publish the regular, Debian slim-based image:
+To publish the alternative, CentOS-based image:
 [source,shell]
 ----
 $ docker push xebialabs/xl-deploy:8.1-centos
 $ docker push xebialabs/xl-deploy:8.1.0-centos
 ----
 
-== RHEL-based image
+== Red Hat-certified image
 
-To build the alternative, Red Hat Enterprise Linux-based image:
+To build the Red Hat-certified image:
 
 [source,shell]
 ----
 $ docker build --build-arg XLD_VERSION=8.1.0 --tag xebialabs/xl-deploy:8.1-rhel --tag xebialabs/xl-deploy:8.1.0-rhel -f rhel/Dockerfile .
-----
-
-To publish the alternative, Red Hat Enterprise Linux-based image:
-[source,shell]
-----
-$ docker push xebialabs/xl-deploy:8.1-rhel
-$ docker push xebialabs/xl-deploy:8.1.0-rhel
 ----
