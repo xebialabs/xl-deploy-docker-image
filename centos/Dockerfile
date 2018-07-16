@@ -66,7 +66,7 @@ ADD resources/amd64/tini ${APP_ROOT}/tini
 RUN chmod ugo+x ${APP_ROOT}/tini
 
 # Install dependencies
-RUN yum update && \
+RUN yum update -y && \
     yum install -y java-1.8.0-openjdk-headless && \
     yum clean all
 
