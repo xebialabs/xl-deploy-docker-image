@@ -68,7 +68,7 @@ RUN chmod ugo+x ${APP_ROOT}/tini
 # Install dependencies
 RUN yum update -y && \
     yum install -y java-1.8.0-openjdk-headless && \
-    yum clean all
+    yum clean all -q
 
 # Copy installed XL Deploy
 COPY --from=installer ${APP_ROOT} ${APP_ROOT}
