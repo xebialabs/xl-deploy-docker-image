@@ -25,11 +25,11 @@ RUN mv ${APP_HOME}/conf ${APP_HOME}/default-conf && \
 COPY resources/default-conf ${APP_HOME}/default-conf
 
 # Modify conf/xld-wrapper-linux.conf to add node-conf to the classpath and to add container-specific VM options
-RUN gawk '/^wrapper.java.classpath.1=/ { print "wrapper.java.classpath.1=node-conf" } \
-{ if (match($0, /^(wrapper.java.classpath).([0-9]+)=(.*)$/, a)) { printf("%s.%d=%s\n", a[1], (a[2]+1), a[3]) } else \
-  if (/^wrapper.java.additional.1=-Xms1024m$/) { print "wrapper.java.additional.1=-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" } else \
-  { print $0 }}' ${APP_HOME}/default-conf/xld-wrapper-linux.conf  > /tmp/xld-wrapper-linux.conf
-RUN mv /tmp/xld-wrapper-linux.conf ${APP_HOME}/default-conf/xld-wrapper-linux.conf
+COPY resources/modify-xld-wrapper-linux-conf.gawk /tmp/modify-xld-wrapper-linux-conf.gawk
+RUN chmod +x /tmp/modify-xld-wrapper-linux-conf.gawk && \
+    /tmp/modify-xld-wrapper-linux-conf.gawk ${APP_HOME}/default-conf/xld-wrapper-linux.conf > /tmp/xld-wrapper-linux.conf && \
+    mv /tmp/xld-wrapper-linux.conf ${APP_HOME}/default-conf/xld-wrapper-linux.conf && \
+    rm /tmp/modify-xld-wrapper-linux-conf.gawk
 
 # Create node-specific conf directory and add template for node-specific xl-deploy.conf file
 RUN mkdir ${APP_HOME}/node-conf
