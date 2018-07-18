@@ -14,6 +14,8 @@ This document only describes how to build these images. For user documentation, 
 
 = Building and publishing the images
 
+Before building an image, download the right version of the server ZIP for XL Deploy from https://dist.xebialabs.com[the XebiaLabs distribution site] and put it in the `resources` directory. For example, to build the image for XL Deploy 8.1.0, put the file called `xl-deploy-8.1.0-server.zip` in the `resources` directory.
+
 == Debian-based image
 
 To build the regular, Debian slim-based image:
