@@ -29,7 +29,7 @@ pipeline {
             }
             agent {
                 node {
-                    label 'xld'
+                    label 'xld || release-xld'
                 }
             }
 
