@@ -23,6 +23,15 @@ if [ -z "$(ls -A ${APP_HOME}/plugins)" ]; then
   echo "Done"
 fi
 
+# Copy user libs
+if [ -n "$(ls ${APP_HOME}/user-lib)" ]; then
+  echo "... Copying user libs from ${APP_HOME}/user-lib"
+
+  cp ${APP_HOME}/user-lib/* ${APP_HOME}/lib/
+
+  echo "Done"
+fi
+
 # Set up new installation
 if [ ! -f "${APP_HOME}/conf/deployit.conf" ]; then
   echo "No ${APP_HOME}/conf/deployit.conf file detected:"
