@@ -1,9 +1,9 @@
 = This repo is deprecated. Please go to the new official docker images repo
 
 This repo is deprecated. Please go to the new official docker images repo
+
 https://github.com/xebialabs/xl-docker-images
 
-----
 
 * XL Docker image for XL Deploy
 
