@@ -4,7 +4,7 @@ This repo is deprecated. Please go to the new official docker images repo
 
 https://github.com/xebialabs/xl-docker-images
 
-Please do not use this repo anymore
+** Please do not use this repo anymore **
 
 = XL Docker image for XL Deploy
 
