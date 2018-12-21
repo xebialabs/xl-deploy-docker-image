@@ -39,6 +39,9 @@ ADD resources/node-conf/xl-deploy.conf.template ${APP_HOME}/node-conf
 RUN mv ${APP_HOME}/plugins ${APP_HOME}/default-plugins && \
     mkdir ${APP_HOME}/plugins
 
+# Create empty user lib directory
+RUN mkdir ${APP_HOME}/user-lib
+
 # Create empty repository directory
 RUN mkdir ${APP_HOME}/repository
 
@@ -78,7 +81,7 @@ WORKDIR ${APP_HOME}
 # Don't run as root
 USER 10001
 
-VOLUME ["${APP_HOME}/conf", "${APP_HOME}/hotfix/lib", "${APP_HOME}/hotfix/plugins", "${APP_HOME}/ext", "${APP_HOME}/plugins", "${APP_HOME}/repository"]
+VOLUME ["${APP_HOME}/conf", "${APP_HOME}/user-lib", "${APP_HOME}/hotfix/lib", "${APP_HOME}/hotfix/plugins", "${APP_HOME}/ext", "${APP_HOME}/plugins", "${APP_HOME}/repository"]
 EXPOSE 4516
 
 # Environment variables are not expanded when using the exec form of the ENTRYPOINT command. They are
